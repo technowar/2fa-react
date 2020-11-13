@@ -1,65 +1,89 @@
+import { useRef } from 'react';
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 
-export default function Home() {
+export default function Home(props) {
+  const inputRef = useRef([]);
+  const { value } = props;
+
+  /*
+  function onChange(evt, idx) {
+    let { target } = evt;
+
+    target = {
+      ...target,
+      value: target.validity.valid ? target.value : '',
+    };
+
+    console.log(idx);
+    console.log(inputRef);
+  }
+  */
+
+  function onKeyUp(evt, idx) {
+    console.log(evt.target.validity.valid);
+
+    let { target } = evt;
+
+    if (evt.keyCode === 8) {
+      console.log('here');
+    }
+  }
+
+  /*
+  async function onChange(evt) {
+    await fetch('http://1.1.1.2:3000/api/validate', { method: 'POST' });
+  }
+  */
+
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>Blys 2FA Verification</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
+          Two-Factor Authentication
         </p>
 
         <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+          {[0, 1, 2, 3, 4, 5].map((elem, idx) => (
+            <div className={styles.inputContainer} key={idx}>
+              <input
+                autoFocus
+                className={styles.input}
+                maxLength="1"
+                pattern="\d*"
+                type="tel"
+                ref={el => inputRef.current[idx] = el}
+                onKeyUp={(evt) => onKeyUp(evt, idx)}
+              />
+            </div>
+          ))}
+        </div>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div className={styles.infoContainer}>
+          <span className={styles.info}>
+            Enter the code below to continue.
+          </span>
+          <span className={styles.info}>
+            {value}
+          </span>
         </div>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
     </div>
   )
+}
+
+export async function getServerSideProps() {
+  const res = await fetch('http://1.1.1.2:3000/api/generate')
+  const { value } = await res.json()
+
+  return {
+    props: {
+      value
+    },
+  };
 }
